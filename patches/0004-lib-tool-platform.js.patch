@@ -1,0 +1,41 @@
+diff --git a/lib/tool-platform.js b/lib/tool-platform.js
+index 68fce75..3eef445 100644
+--- a/lib/tool-platform.js
++++ b/lib/tool-platform.js
+@@ -1,4 +1,17 @@
+-import { settleRun } from '@deepseek-ai/dsh-subagent';
++import { settleRun } from './local-compat.js';
++// DSH >= 0.2.1 removed `ctx.subagents.start(name, request)`. The provider object
++// itself still owns `start(request)`, so fall back to it when the service method
++// is gone (startActivation() is the new manager path, but it requires a full
++// { parent, maxDepth } control spec we do not build here).
++function startProviderRun(ctx, providerName, request) {
++    const svc = ctx.subagents;
++    if (typeof svc.start === 'function')
++        return svc.start(providerName, request);
++    const provider = svc.getProvider(providerName);
++    if (!provider)
++        throw new Error(`subagent provider "${providerName}" is not registered`);
++    return provider.start(request);
++}
+ export const name = 'tool-subagent-muse';
+ export const inject = ['tools', 'subagents'];
+ export const ORIGINAL_DESCRIPTION = 'Delegate a self-contained task to a subagent (a separate agent that works in its own context) to offload focused, independent work — research, a scoped implementation, an analysis — so it does not consume this conversation\'s context. The subagent returns its result, not its intermediate steps. Give it a complete, standalone prompt: it does not see this conversation. This call waits for the result by default. Set `run_in_background: true` to return a job id; collect with `job_output` and stop with `job_kill`.';
+@@ -152,7 +165,7 @@ export function apply(ctx, config) {
+                     owner: parent.id,
+                     run: () => {
+                         const controller = new AbortController();
+-                        const start = ctx.subagents.start(provider, { ...request, signal: controller.signal });
++                        const start = startProviderRun(ctx, provider, { ...request, signal: controller.signal });
+                         return {
+                             cancel: reason => controller.abort(reason ?? 'background Muse subagent job killed'),
+                             done: settleBackgroundStart(start, controller.signal),
+@@ -161,7 +174,7 @@ export function apply(ctx, config) {
+                 });
+                 return { kind: 'background', jobId: id };
+             }
+-            const run = await ctx.subagents.start(provider, { ...request, signal: exec.signal });
++            const run = await startProviderRun(ctx, provider, { ...request, signal: exec.signal });
+             return await settleForeground(run);
+         },
+     });

@@ -1,0 +1,47 @@
+diff --git a/tool-platform.ts b/tool-platform.ts
+index 519a913..9145a36 100644
+--- a/tool-platform.ts
++++ b/tool-platform.ts
+@@ -1,10 +1,22 @@
+ import type { ContentBlock } from '@deepseek-ai/dsh-llm'
+-import type { SubagentResult, SubagentRun } from '@deepseek-ai/dsh-subagent'
++import type { SubagentResult, SubagentRun, SubagentStartRequest } from '@deepseek-ai/dsh-subagent'
+ import type { JobOutcome } from '@deepseek-ai/dsh-jobs'
+ import type { MuseContext, ToolArgs, ToolConfig, ToolOutput } from './types.js'
+ import z from '@deepseek-ai/schemastery'
+-import { settleRun } from '@deepseek-ai/dsh-subagent'
++import { settleRun } from './local-compat.js'
+ 
++// DSH >= 0.2.1 移除了 `ctx.subagents.start(name, request)`；provider 对象本身仍有
++// `start(request)`，服务方法不存在时退回它。
++function startProviderRun(ctx: MuseContext, providerName: string, request: SubagentStartRequest): Promise<SubagentRun> {
++  const svc = ctx.subagents as unknown as {
++    start?: (name: string, request: SubagentStartRequest) => Promise<SubagentRun>
++    getProvider?: (name: string) => { start: (request: SubagentStartRequest) => Promise<SubagentRun> } | undefined
++  }
++  if (typeof svc.start === 'function') return svc.start(providerName, request)
++  const provider = svc.getProvider?.(providerName)
++  if (!provider) throw new Error(`subagent provider "${providerName}" is not registered`)
++  return provider.start(request)
++}
+ 
+ export const name = 'tool-subagent-muse'
+ export const inject = ['tools', 'subagents']
+@@ -172,7 +184,7 @@ export function apply(ctx: Pick<MuseContext, 'tools' | 'subagents' | 'get'>, con
+           owner: parent.id,
+           run: () => {
+             const controller = new AbortController()
+-            const start = ctx.subagents.start(provider, { ...request, signal: controller.signal })
++            const start = startProviderRun(ctx, provider, { ...request, signal: controller.signal })
+             return {
+               cancel: reason => controller.abort(reason ?? 'background Muse subagent job killed'),
+               done: settleBackgroundStart(start, controller.signal),
+@@ -182,7 +194,7 @@ export function apply(ctx: Pick<MuseContext, 'tools' | 'subagents' | 'get'>, con
+         return { kind: 'background', jobId: id }
+       }
+ 
+-      const run = await ctx.subagents.start(provider, { ...request, signal: exec.signal })
++      const run = await startProviderRun(ctx, provider, { ...request, signal: exec.signal })
+       return await settleForeground(run)
+     },
+   })

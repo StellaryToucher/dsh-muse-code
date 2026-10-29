@@ -1,0 +1,14 @@
+diff --git a/lib/main.js b/lib/main.js
+index 5cea347..732075a 100644
+--- a/lib/main.js
++++ b/lib/main.js
+@@ -1,7 +1,8 @@
+ import { stat } from 'node:fs/promises';
+ import { isAbsolute } from 'node:path';
+ import z from '@deepseek-ai/schemastery';
+-import { NO_START_CAPABILITIES, assertPositiveFinite, resolveChildCwd, } from '@deepseek-ai/dsh-subagent';
++import { NO_START_CAPABILITIES, assertPositiveFinite, } from '@deepseek-ai/dsh-subagent';
++import { resolveChildCwd } from './local-compat.js';
+ import { startMuseRun } from './runtime.js';
+ import { apply as applyMuseTool } from './tool-platform.js';
+ export const name = 'subagent-muse';

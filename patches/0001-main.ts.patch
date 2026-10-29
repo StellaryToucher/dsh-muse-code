@@ -1,0 +1,14 @@
+diff --git a/main.ts b/main.ts
+index 5ade409..4d55be4 100644
+--- a/main.ts
++++ b/main.ts
+@@ -5,8 +5,8 @@ import z from '@deepseek-ai/schemastery'
+ import {
+   NO_START_CAPABILITIES,
+   assertPositiveFinite,
+-  resolveChildCwd,
+ } from '@deepseek-ai/dsh-subagent'
++import { resolveChildCwd } from './local-compat.js'
+ import { startMuseRun } from './runtime.js'
+ import { apply as applyMuseTool } from './tool-platform.js'
+ 
