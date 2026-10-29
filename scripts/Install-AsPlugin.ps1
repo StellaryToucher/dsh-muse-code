@@ -13,7 +13,7 @@
 [CmdletBinding()]
 param(
   [string]$Profile = 'desktop',
-  [string]$PackageName = '@your-scope/dsh-muse-code',
+  [string]$PackageName = '@stellarytoucher/dsh-muse-code',
   [switch]$Uninstall
 )
 

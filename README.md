@@ -40,7 +40,7 @@ stream protocol error: message item `msg_...` changed phase from `final_answer` 
 
 | # | 位置 | 变化 | 本仓库修法 |
 |---|---|---|---|
-| 1 | `package.json` → `peerDependencies` | 只允许 `0.1.7-rc.2 \|\| 0.2.1-alpha.1`，而宿主是 `0.2.1-rc.3` | 放宽为 `>=0.1.7-rc.2` |
+| 1 | `package.json` → `peerDependencies` | 只允许 `0.1.7-rc.2 \|\| 0.2.1-alpha.1`，而宿主是 `0.2.1-rc.3` | 放宽并补上预发布分支：`>=0.1.7-rc.2 <0.2.0-0 \|\| >=0.2.0-rc.1 <0.3.0-0 \|\| >=0.2.1-rc.1 <0.3.0-0` |
 | 2 | `@deepseek-ai/dsh-subagent` 的根导出 | 删除了 `settleRun`、`resolveChildCwd` | `local-compat.ts` 提供语义等价的本地实现，只依赖仍存在的 `assertUsableCwd` |
 | 3 | `ctx.subagents.start(name, req)` | 服务方法被移除（改为 `startActivation()`，需完整 `{parent, maxDepth}` 控制描述） | `startProviderRun()`：方法不存在时退回 `getProvider(name).start(req)` |
 
@@ -63,11 +63,11 @@ stream protocol error: message item `msg_...` changed phase from `final_answer` 
 ```powershell
 # 1) 把本目录放到固定位置，例如 %USERPROFILE%\.dsh\plugins\dsh-muse-code
 # 2) 在 DSH profile 的 package.json 加依赖（path 指向本目录）：
-#      "dependencies": { "@your-scope/dsh-muse-code": "file:../../plugins/dsh-muse-code" }
+#      "dependencies": { "@stellarytoucher/dsh-muse-code": "file:../../plugins/dsh-muse-code" }
 # 3) 在 profile 的 cordis.patch.yml 里插入（或直接用本目录的 cordis.patch.yml）：
 #      - insert:
 #          - id: subagent-muse
-#            name: '@your-scope/dsh-muse-code'
+#            name: '@stellarytoucher/dsh-muse-code'
 #            config: {}
 # 4) 完全退出并重启 DSH
 ```
@@ -77,22 +77,22 @@ stream protocol error: message item `msg_...` changed phase from `final_answer` 
 ### 方式 B：发布到 npm 后用插件管理器
 
 ```powershell
-npm publish --access public        # 先把 package.json 里的 @your-scope 换成你的 scope
+npm publish --access public        # 发布到 npm 时按需改成你自己的 scope
 ```
 
-然后在 DSH 的 Plugin Manager 里安装 `@your-scope/dsh-muse-code`。
+然后在 DSH 的 Plugin Manager 里安装 `@stellarytoucher/dsh-muse-code`。
 
 ### 配置（provider 需要的字段）
 
 ```yaml
 - id: subagent-muse
-  name: '@your-scope/dsh-muse-code'
+  name: '@stellarytoucher/dsh-muse-code'
   config:
     providerName: muse
     runtime: native          # auto | native | wsl（Windows 建议 native）
     command: C:\Users\<you>\AppData\Local\Programs\muse\muse.exe
     provider: meta           # Muse 的 provider 分支
-    model: commandcode-plan/meta/muse-spark-1.3-contributor
+    model: muse-spark-1.3-contributor   # 或你的网关/官方暴露的模型名
     reasoningEffort: xhigh
     approvalMode: never
     env:

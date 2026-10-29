@@ -42,4 +42,4 @@ pnpm run check
 
 ## 校验和
 
-生成后可用 `git apply --stat patches/*.patch` 复核改动规模：共 4 个文件、约 +40/−6 行。
+生成后可用 `git apply --stat patches/*.patch` 复核改动规模：共 4 个文件、约 +35/−9 行。

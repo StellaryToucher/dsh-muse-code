@@ -21,7 +21,7 @@
 
 - `package.json`：`peerDependencies` 由 `0.1.7-rc.2 || 0.2.1-alpha.1` 放宽为
   `>=0.1.7-rc.2`，避免宿主版本号只要不在白名单里就被跳过加载。
-- `package.json`：`name` 改为 `@your-scope/dsh-muse-code`，`private: false`，版本号
+- `package.json`：`name` 改为 `@stellarytoucher/dsh-muse-code`，`private: false`，版本号
   `0.1.1-dsh021.0`（发布前请改成你自己的 scope）。
 
 ### 新增
