@@ -1,6 +1,5 @@
 node_modules/
 *.log
 AGENTS.md
-lib/
 .test-build/
 .artifacts/
